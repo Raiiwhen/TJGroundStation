@@ -46,7 +46,6 @@ tjgroundstation\fatfs.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.
 tjgroundstation\fatfs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 tjgroundstation\fatfs.o: ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h
 tjgroundstation\fatfs.o: ../Middlewares/Third_Party/FatFs/src/diskio.h
-tjgroundstation\fatfs.o: ..\MDK-ARM\SD.h
 tjgroundstation\fatfs.o: ../Inc/user_diskio.h
 tjgroundstation\fatfs.o: ..\MDK-ARM\RTC.h
 tjgroundstation\fatfs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

@@ -78,9 +78,6 @@ void Error_Handler(void);
 #define LED_Y_GPIO_Port GPIOB
 #define LED_G_Pin GPIO_PIN_5
 #define LED_G_GPIO_Port GPIOJ
-#define INT_STDBY_Pin GPIO_PIN_0
-#define INT_STDBY_GPIO_Port GPIOA
-#define INT_STDBY_EXTI_IRQn EXTI0_IRQn
 #define INT_MPU_Pin GPIO_PIN_4
 #define INT_MPU_GPIO_Port GPIOA
 #define INT_MPU_EXTI_IRQn EXTI4_IRQn
@@ -101,6 +98,7 @@ void Error_Handler(void);
 #define W25_WP 		BIT_ADDR(GPIOA_BASE+20,9)
 #define BAT_CTL 	BIT_ADDR(GPIOI_BASE+20,8)
 #define NAND_BSY  BIT_ADDR(GPIOG_BASE+16,7)
+#define WK_UP			BIT_ADDR(GPIOA_BASE+16,0)
 
 /*IIC1 bus via bit band*/
 #define SDA1_IN()  {GPIOJ->MODER&=~(3<<(10*2));GPIOJ->MODER|=0<<10*2;}	//PJ10ÊäÈëÄ£Ê½

@@ -8,6 +8,33 @@
 uint16_t ADC_TMP[16];
 extern ADC_HandleTypeDef hadc1;
 
+void SYS_STDBY(void){
+	uint32_t tempreg;
+ 	RCC->AHB1RSTR|=0X01FE;
+  while(WK_UP);
+	RCC->AHB1RSTR|=1<<0;
+	/*config RTC INT*/
+	RCC->APB1ENR|=1<<28;
+	PWR->CR|=1<<8;
+	RTC->WPR=0xCA;
+	RTC->WPR=0x53; 
+	tempreg=RTC->CR&(0X0F<<12);
+	RTC->CR&=~(0XF<<12);
+	RTC->ISR&=~(0X3F<<8);
+	PWR->CR|=1<<2; 
+	RTC->CR|=tempreg;
+	RTC->WPR=0xFF;
+	/*Config STD_BY*/
+	SCB->SCR|=1<<2;				//enable sleep deep bit (SYS->CTRL)	   
+	RCC->APB1ENR|=1<<28;	//enable pwr_mgt clock
+	PWR->CSR|=1<<8;     	//config WKUP Key
+	PWR->CR|=1<<2;      	//clear WKUP flag
+	PWR->CR|=1<<1;      	//set PDDS
+	/*__wfi cmd*/
+	__ASM volatile("wfi");		  
+
+}
+
 float get_BAT(void){
 	uint8_t cnt;
 	uint32_t sum = 0;
@@ -40,28 +67,4 @@ float get_TMP(void){
 	else
 		BAT_CTL = 0;
 	return data;
-}
-
-void SYS_STDBY(void){
-	
-  __HAL_RCC_AHB1_FORCE_RESET();       //复位所有IO口 
-//	RCC->AHB1RSTR = 0xffffffff;	//RESET all IO ports
-	   
-	__HAL_RCC_PWR_CLK_ENABLE();         //使能PWR时钟
-//	RCC->APB1ENR = RCC_APB1ENR_PWREN;//enable power management clock
-	__HAL_RCC_BACKUPRESET_FORCE();      //复位备份区域
-	HAL_PWR_EnableBkUpAccess();         //后备区域访问使能  
-//	RCC->BDCR;
-
-  __HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);                  //清除Wake_UP标志
-//	PWR->CR |= PWR_FLAG_WU << 2;
-	HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);           //设置WKUP用于唤醒
-//	/*set PA0 as awake mode*/
-//	PWR->CSR = 0x00000100;
-	HAL_PWR_EnterSTANDBYMode();                         //进入待机模式   
-//	/*enter stdby*/
-//	PWR->CR |= PWR_CR_PDDS;
-//	SCB->SCR |= (uint32_t)SCB_SCR_SLEEPDEEP_Msk;
-//	/*core stdby, wait for PA0 rising edge*/
-//	__wfi();
 }

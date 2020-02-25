@@ -123,13 +123,13 @@ int main(void)
   MX_DMA_Init();
   MX_TIM5_Init();
   MX_USART1_UART_Init();
-  MX_SDIO_SD_Init();
   MX_SPI4_Init();
   MX_SPI5_Init();
   MX_ADC1_Init();
+  MX_FATFS_Init();
   MX_FMC_Init();
   MX_SPI1_Init();
-  MX_FATFS_Init();
+  MX_SDIO_SD_Init();
   /* USER CODE BEGIN 2 */
 	HAL_ADC_Start_DMA(&hadc1,(uint32_t*)ADC_TMP,16);
 	HAL_TIM_PWM_Start(&htim5,TIM_CHANNEL_2);
@@ -578,23 +578,23 @@ static void MX_FMC_Init(void)
   hsdram1.Instance = FMC_SDRAM_DEVICE;
   /* hsdram1.Init */
   hsdram1.Init.SDBank = FMC_SDRAM_BANK1;
-  hsdram1.Init.ColumnBitsNumber = FMC_SDRAM_COLUMN_BITS_NUM_9;
+  hsdram1.Init.ColumnBitsNumber = FMC_SDRAM_COLUMN_BITS_NUM_8;
   hsdram1.Init.RowBitsNumber = FMC_SDRAM_ROW_BITS_NUM_13;
   hsdram1.Init.MemoryDataWidth = FMC_SDRAM_MEM_BUS_WIDTH_16;
   hsdram1.Init.InternalBankNumber = FMC_SDRAM_INTERN_BANKS_NUM_2;
-  hsdram1.Init.CASLatency = FMC_SDRAM_CAS_LATENCY_2;
+  hsdram1.Init.CASLatency = FMC_SDRAM_CAS_LATENCY_1;
   hsdram1.Init.WriteProtection = FMC_SDRAM_WRITE_PROTECTION_DISABLE;
   hsdram1.Init.SDClockPeriod = FMC_SDRAM_CLOCK_DISABLE;
   hsdram1.Init.ReadBurst = FMC_SDRAM_RBURST_ENABLE;
   hsdram1.Init.ReadPipeDelay = FMC_SDRAM_RPIPE_DELAY_0;
   /* SdramTiming */
-  SdramTiming.LoadToActiveDelay = 3;
-  SdramTiming.ExitSelfRefreshDelay = 11;
-  SdramTiming.SelfRefreshTime = 9;
-  SdramTiming.RowCycleDelay = 12;
-  SdramTiming.WriteRecoveryTime = 4;
-  SdramTiming.RPDelay = 5;
-  SdramTiming.RCDDelay = 5;
+  SdramTiming.LoadToActiveDelay = 16;
+  SdramTiming.ExitSelfRefreshDelay = 16;
+  SdramTiming.SelfRefreshTime = 16;
+  SdramTiming.RowCycleDelay = 16;
+  SdramTiming.WriteRecoveryTime = 16;
+  SdramTiming.RPDelay = 16;
+  SdramTiming.RCDDelay = 16;
 
   if (HAL_SDRAM_Init(&hsdram1, &SdramTiming) != HAL_OK)
   {
@@ -673,9 +673,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PK1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  /*Configure GPIO pins : PK1 PK2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOK, &GPIO_InitStruct);
 
@@ -713,8 +713,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_G_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : INT_STDBY_Pin INT_MPU_Pin */
-  GPIO_InitStruct.Pin = INT_STDBY_Pin|INT_MPU_Pin;
+  /*Configure GPIO pins : PA0 INT_MPU_Pin */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|INT_MPU_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -729,6 +729,12 @@ static void MX_GPIO_Init(void)
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_IRQn, 2, 2);
   HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 2, 3);
+  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 2, 3);
+  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
 
   HAL_NVIC_SetPriority(EXTI4_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);

@@ -46,7 +46,6 @@ tjgroundstation\main.o: ../Inc/ffconf.h
 tjgroundstation\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 tjgroundstation\main.o: ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h
 tjgroundstation\main.o: ../Middlewares/Third_Party/FatFs/src/diskio.h
-tjgroundstation\main.o: ..\MDK-ARM\SD.h
 tjgroundstation\main.o: ../Inc/user_diskio.h
 tjgroundstation\main.o: ..\MDK-ARM\console.h
 tjgroundstation\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

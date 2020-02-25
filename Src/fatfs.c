@@ -19,7 +19,7 @@
 #include "fatfs.h"
 
 uint8_t retUSER;    /* Return value for USER */
-char USERPath[4] = "0:"; /* USER logical drive path */
+char USERPath[4];   /* USER logical drive path */
 FATFS USERFatFS;    /* File system object for USER logical drive */
 FIL USERFile;       /* File object for USER */
 
@@ -31,12 +31,13 @@ FIL USERFile;       /* File object for USER */
 
 void MX_FATFS_Init(void) 
 {
-	FRESULT tmp;
-	uint32_t br = 0;
-	char buff[20] = {0};
+  /*## FatFS: Link the USER driver ###########################*/
   retUSER = FATFS_LinkDriver(&USER_Driver, USERPath);
 
   /* USER CODE BEGIN Init */
+	uint32_t tmp = 0, br = 0;
+	char buff[100] = {0};
+	
 	tmp = f_mount(&USERFatFS, (TCHAR const*)USERPath, 1);
 //	printf("Fatfs mount %d\r\n", tmp);
 	

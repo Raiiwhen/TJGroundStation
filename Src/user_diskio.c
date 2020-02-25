@@ -127,7 +127,7 @@ DRESULT USER_read (
 	if(pdrv==_D_NAND)	res = (DRESULT)HAL_SD_ReadBlocks(&hsd,(BYTE*)buff,sector,count,10);
 	if(pdrv==_E_SD)		res = (DRESULT)HAL_SD_ReadBlocks(&hsd,(BYTE*)buff,sector,count,10);
 	return res;  
-	/* USER CODE END READ */
+  /* USER CODE END READ */
 }
 
 /**

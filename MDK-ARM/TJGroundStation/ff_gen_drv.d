@@ -2,7 +2,13 @@ tjgroundstation\ff_gen_drv.o: ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.c
 tjgroundstation\ff_gen_drv.o: ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h
 tjgroundstation\ff_gen_drv.o: ../Middlewares/Third_Party/FatFs/src/diskio.h
 tjgroundstation\ff_gen_drv.o: ../Middlewares/Third_Party/FatFs/src/integer.h
-tjgroundstation\ff_gen_drv.o: ..\MDK-ARM\SD.h
+tjgroundstation\ff_gen_drv.o: ../Middlewares/Third_Party/FatFs/src/ff.h
+tjgroundstation\ff_gen_drv.o: ../Inc/ffconf.h
+tjgroundstation\ff_gen_drv.o: ../Inc/main.h
+tjgroundstation\ff_gen_drv.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
+tjgroundstation\ff_gen_drv.o: ../Inc/stm32f4xx_hal_conf.h
+tjgroundstation\ff_gen_drv.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h
+tjgroundstation\ff_gen_drv.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h
 tjgroundstation\ff_gen_drv.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h
 tjgroundstation\ff_gen_drv.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f429xx.h
 tjgroundstation\ff_gen_drv.o: ../Drivers/CMSIS/Include/core_cm4.h
@@ -13,10 +19,6 @@ tjgroundstation\ff_gen_drv.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
 tjgroundstation\ff_gen_drv.o: ../Drivers/CMSIS/Include/mpu_armv7.h
 tjgroundstation\ff_gen_drv.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h
 tjgroundstation\ff_gen_drv.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
-tjgroundstation\ff_gen_drv.o: ../Inc/stm32f4xx_hal_conf.h
-tjgroundstation\ff_gen_drv.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h
-tjgroundstation\ff_gen_drv.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h
-tjgroundstation\ff_gen_drv.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h
 tjgroundstation\ff_gen_drv.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
 tjgroundstation\ff_gen_drv.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 tjgroundstation\ff_gen_drv.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h
@@ -42,7 +44,4 @@ tjgroundstation\ff_gen_drv.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_
 tjgroundstation\ff_gen_drv.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 tjgroundstation\ff_gen_drv.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 tjgroundstation\ff_gen_drv.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
-tjgroundstation\ff_gen_drv.o: ../Middlewares/Third_Party/FatFs/src/ff.h
-tjgroundstation\ff_gen_drv.o: ../Inc/ffconf.h
-tjgroundstation\ff_gen_drv.o: ../Inc/main.h
 tjgroundstation\ff_gen_drv.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h

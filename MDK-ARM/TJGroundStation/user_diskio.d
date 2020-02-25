@@ -3,7 +3,13 @@ tjgroundstation\user_diskio.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 tjgroundstation\user_diskio.o: ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h
 tjgroundstation\user_diskio.o: ../Middlewares/Third_Party/FatFs/src/diskio.h
 tjgroundstation\user_diskio.o: ../Middlewares/Third_Party/FatFs/src/integer.h
-tjgroundstation\user_diskio.o: ..\MDK-ARM\SD.h
+tjgroundstation\user_diskio.o: ../Middlewares/Third_Party/FatFs/src/ff.h
+tjgroundstation\user_diskio.o: ../Inc/ffconf.h
+tjgroundstation\user_diskio.o: ../Inc/main.h
+tjgroundstation\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
+tjgroundstation\user_diskio.o: ../Inc/stm32f4xx_hal_conf.h
+tjgroundstation\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h
+tjgroundstation\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h
 tjgroundstation\user_diskio.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h
 tjgroundstation\user_diskio.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f429xx.h
 tjgroundstation\user_diskio.o: ../Drivers/CMSIS/Include/core_cm4.h
@@ -14,10 +20,6 @@ tjgroundstation\user_diskio.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
 tjgroundstation\user_diskio.o: ../Drivers/CMSIS/Include/mpu_armv7.h
 tjgroundstation\user_diskio.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h
 tjgroundstation\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
-tjgroundstation\user_diskio.o: ../Inc/stm32f4xx_hal_conf.h
-tjgroundstation\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h
-tjgroundstation\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h
-tjgroundstation\user_diskio.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h
 tjgroundstation\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
 tjgroundstation\user_diskio.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 tjgroundstation\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h
@@ -43,7 +45,4 @@ tjgroundstation\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal
 tjgroundstation\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 tjgroundstation\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 tjgroundstation\user_diskio.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
-tjgroundstation\user_diskio.o: ../Middlewares/Third_Party/FatFs/src/ff.h
-tjgroundstation\user_diskio.o: ../Inc/ffconf.h
-tjgroundstation\user_diskio.o: ../Inc/main.h
 tjgroundstation\user_diskio.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h

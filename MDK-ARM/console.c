@@ -110,6 +110,7 @@ void console_log(void){
 	RX_CNT = strlen((char*)pre_cmd);
 	strcpy(RX_BUFF,(char*)pre_cmd);
 	delay_ms(1);
+	
 }
 
 void console_exe(void){

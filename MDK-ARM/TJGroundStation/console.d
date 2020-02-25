@@ -56,6 +56,6 @@ tjgroundstation\console.o: ../Inc/ffconf.h
 tjgroundstation\console.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 tjgroundstation\console.o: ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h
 tjgroundstation\console.o: ../Middlewares/Third_Party/FatFs/src/diskio.h
-tjgroundstation\console.o: ..\MDK-ARM\SD.h
 tjgroundstation\console.o: ../Inc/user_diskio.h
 tjgroundstation\console.o: NAND.h
+tjgroundstation\console.o: SD.h
