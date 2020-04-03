@@ -11,12 +11,16 @@
 #include "NAND.h"
 #include "ff.h"
 #include "SD.h"
+#include "SRAM.h"
 
 #define CONSOLE_UART USART1
 #define LOG_PAGE 0
 
 uint8_t page_buff[8629];
 uint8_t page_wbuff[8629];
+uint8_t mst_echo[128];
+uint8_t mst_databuff[128];
+
 extern SD_HandleTypeDef hsd;
 
 /* basic support function*/
@@ -28,7 +32,7 @@ static void delay_ms(uint16_t ms){
 	}
 }
 
-char RX_BUFF[30];
+char RX_BUFF[50];
 uint8_t RX_CNT;
 static char CONSOLE_FLAG;
 #pragma import(__use_no_semihosting)             
@@ -40,6 +44,13 @@ int fputc(int ch, FILE *f){
 	while((CONSOLE_UART->SR&0X40)==0);
 	CONSOLE_UART->DR = (uint8_t) ch;      
 	return ch;
+}
+void put_len(const uint8_t* buff, uint16_t length){
+	uint16_t cnt = 0;
+	while(length--){
+		while((CONSOLE_UART->SR&0X40)==0);
+		CONSOLE_UART->DR = *(buff + cnt++);
+	}
 }
 /* end support*/
 
@@ -111,43 +122,67 @@ void console_log(void){
 	strcpy(RX_BUFF,(char*)pre_cmd);
 	delay_ms(1);
 	
+	/**debug content*/
+//	SDRAM_RW8(22) = 9;
+//	printf("SDRAM %d\r\n",SDRAM_RW8(22));
+	
 }
 
 void console_exe(void){
+	uint16_t echo_len = 0;
+	
 	if(!CONSOLE_FLAG){
 		return;
 	}else{
 		CONSOLE_FLAG = 0;
 	}
+	
+	if(RX_BUFF[0] < 64){
+		/*TJMonster interface*/		
+		switch(RX_BUFF[0]){
+			case 8:	//sync flag
+				mst_sync(mst_echo);
+				echo_len = 16;
+				break;
+			case 9:	//sync flag
+				mst_getStream(mst_echo,127);
+				echo_len = 128;
+				break;
 
-	printf("console> ");
-	if(!strcmp(RX_BUFF,"hi\r\n"))						{printf("yo~");}
-	else if(!strcmp(RX_BUFF,"battery\r\n"))	{cmd_battery();}
-	else if(!memcmp(RX_BUFF,"IIC1",4))			{cmd_iic1();}
-	else if(!memcmp(RX_BUFF,"flash",5))			{cmd_flash();}
-	else if(!memcmp(RX_BUFF,"RTC",3))				{cmd_rtc();}
-	else if(!memcmp(RX_BUFF,"MPU",3))				{cmd_mpu();}
-	else if(!memcmp(RX_BUFF,"W25",3))				{cmd_w25();}
-	else if(!memcmp(RX_BUFF,"MS",2))				{cmd_ms();}
-	else if(!memcmp(RX_BUFF,"IMU",3))				{cmd_imu();}
-	else if(!memcmp(RX_BUFF,"SYS",3))  			{cmd_SYSInfo();}
-	else if(!memcmp(RX_BUFF,"/",1))  				{cmd_storage();}
-	else if(!strcmp(RX_BUFF,"exit\r\n"))		{cmd_exit();}
-	else {
-		RX_BUFF[RX_CNT-1] = '\0' ;
-		printf("unknown cmd '%s'\r\n",RX_BUFF);
-		cmd_help();
+			default: printf("%c",0xaa);	//error flag
+		}
+		put_len(mst_echo,echo_len);
+		memset(mst_echo,128,0);
+	}else{
+		/*console interface*/
+		printf("console> ");
+		if(!strcmp(RX_BUFF,"hi\r\n"))						{printf("yo~");}
+		else if(!memcmp(RX_BUFF,"IIC1",4))			{cmd_iic1();}
+		else if(!memcmp(RX_BUFF,"flash",5))			{cmd_flash();}
+		else if(!memcmp(RX_BUFF,"RTC",3))				{cmd_rtc();}
+		else if(!memcmp(RX_BUFF,"MPU",3))				{cmd_mpu();}
+		else if(!memcmp(RX_BUFF,"W25",3))				{cmd_w25();}
+		else if(!memcmp(RX_BUFF,"MS",2))				{cmd_ms();}
+		else if(!memcmp(RX_BUFF,"IMU",3))				{cmd_imu();}
+		else if(!memcmp(RX_BUFF,"SYS",3))  			{cmd_SYSInfo();}
+		else if(!memcmp(RX_BUFF,"/",1))  				{cmd_storage();}
+		else if(!strcmp(RX_BUFF,"exit\r\n"))		{cmd_exit();}
+		else {
+			RX_BUFF[RX_CNT-1] = '\0' ;
+			printf("unknown cmd '%s'\r\n",RX_BUFF);
+			cmd_help();
+		}
+		printf("\r\n");
 	}
-	printf("\r\n");
 	/*reset buff*/
-	for(;RX_CNT!=0;RX_CNT--)RX_BUFF[RX_CNT] = 0;
+	memset(RX_BUFF,0,30);
+	RX_CNT = 0;
 	LED_Y = !LED_Y;
 }
 
 void cmd_help(void){
 	printf("console> help:\r\n");
 	printf("\t|[hi]\r\n");
-	printf("\t|[battery]\r\n");
 	printf("\t|[IIC1]\r\n");
 	printf("\t|[flash]\r\n");
 	printf("\t|[RTC]\r\n");
@@ -158,10 +193,6 @@ void cmd_help(void){
 	printf("\t|[SYS]\r\n");
 	printf("\t|[/]\r\n");
 	printf("\t|[exit]\r\n");
-}
-
-void cmd_battery(void){
-	printf("Battery 100%c.",'%');
 }
 
 void cmd_SYSInfo(void){
@@ -181,13 +212,15 @@ void cmd_SYSInfo(void){
 			RTC_raw2str(temp, str);
 			printf(" [%4d] %s\r\n",_cnt,str);
 		}
-	}else if(!strcmp(RX_BUFF,"SYS -BAT\r\n")){
-		printf("BAT %4.2f V",get_BAT());
+	}else if(!strcmp(RX_BUFF,"SYS -Pwr\r\n")){
+		printf("%4.2fW ",LTC_getI() * LTC_getV());
+		printf("%4.2fV ,%d%c  ",LTC_getV(), (int)LTC_getQ(), '%');
+		printf("BKP %4.2fV",get_BAT());
 	}else{
 		printf("Unknown function char.");
 		printf("\tTry:\r\n");
 		printf("\t|SYS -freq\r\n");
-		printf("\t|SYS -BAT\r\n");
+		printf("\t|SYS -Pwr\r\n");
 		printf("\t|SYS -log\r\n");
 	}
 }
@@ -199,7 +232,6 @@ void cmd_iic1(void){
 		for(cnt=0; cnt<256; cnt++){
 			if(ltc_ack(cnt)){
 				_cnt++;
-				break;
 			}
 		}
 		if(_cnt){
@@ -545,5 +577,62 @@ void cmd_exit(void){
 	printf("Hit [RESET] or [S3] key to awake.\r\n");
 	printf("SYS STDBY.");
 	SYS_STDBY();
+}
+
+void mst_getStream(uint8_t* echo, uint8_t length){
+	memcpy(echo, mst_databuff, length>127?127:length);
+}
+
+void mst_pushStream(uint8_t* pDst, uint8_t length){
+	memcpy(mst_databuff, pDst, length>127?127:length);
+}
+
+void mst_sync(uint8_t* echo){
+	uint8_t buffer[16] = {0};
+	uint8_t pSrc[8] = {0};
+	uint8_t mpu_id;
+	uint32_t nand_id;
+	uint32_t w25_id;
+	uint32_t sd_sta;
+	
+	buffer[0] = 0xb1;
+	buffer[1] = 0xb1;
+	
+	RTC_Get_Date(&pSrc[0],&pSrc[1],&pSrc[2],&pSrc[3]);
+	RTC_Get_Time(&pSrc[4], &pSrc[5], &pSrc[6], &pSrc[7]);
+	memcpy(buffer+2,pSrc,3);
+	memcpy(buffer+5,pSrc+4,2);
+	
+	MPU_ID(&mpu_id);
+	switch(mpu_id){
+		case 0x71:buffer[7] = 0x01;break;		//MPU9250
+		case 0xac:buffer[7] = 0x02;break;		//ICM20601
+		default: 	buffer[7] = mpu_id;				//error
+	}
+	
+	NAND_ID(&nand_id);
+	switch(nand_id){
+		case 0x7284d5ec:	buffer[8] = 0x01; break;//SAMSUNG K9GAG08U0E, 2GB MLC
+		case 0x72c5d7ec:  buffer[8] = 0x02; break;//SAMSUNG K9LBG08U0E, 4GB MLC
+		
+		default: buffer[8] = (uint8_t)nand_id;//unknown
+	}
+	
+	buffer[9] = 0xff;
+	buffer[10] = 0xff;
+	buffer[11] = 0xff;
+	
+	W25_ID(&w25_id,0);
+	switch(w25_id){
+		case 0x00EFAB21:buffer[12] = 0x01;break;//W25M02GV
+		default: buffer[12] = (uint8_t)w25_id;
+	}
+	
+	buffer[13] = 0xff;
+	buffer[14] = 0xff;
+	buffer[15] = 0xd1;
+
+	memset(echo,16,0);
+	memcpy(echo,buffer,16);
 }
 

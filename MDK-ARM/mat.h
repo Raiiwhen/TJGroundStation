@@ -17,7 +17,7 @@ typedef struct{
 }matrix;
 
 int mat_init(matrix* mat, int row, int col);
-int mat_fill(matrix* mat, int row, int col, float* data);
+int mat_fill(matrix* mat, float* data);
 char* mat_put(matrix mat, char* Dst);
 
 matrix mat_unit(int m);

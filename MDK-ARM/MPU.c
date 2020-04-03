@@ -2,11 +2,17 @@
 
 #define SPI_MPU SPI1
 
+uint8_t MPU_RDY;
+
 static void delay_ms(uint16_t ms){
 	uint32_t cnt; 
 	while(ms--){
 		for(cnt=180000;cnt>0;cnt--);
 	}
+}
+
+uint8_t MPU_isRDY(void){
+	return MPU_RDY;
 }
 
 static uint8_t MPU_WRByte(uint8_t data){
@@ -64,6 +70,8 @@ void IMU_Init(void){
 	MPU_Wr_Reg(55,0x10);//INT Pin: rising, PP, 50us pulse; clr by any read
 	delay_ms(1);
 	MPU_Wr_Reg(56,0x01);//raw ready INT
+	
+	MPU_RDY = 1;
 }
 
 uint8_t MPU_ID(uint8_t* id){
@@ -85,11 +93,14 @@ void MPU_Rd_Raw(short* raw){
 		temp1 = MPU_WRByte(0xff);
 		raw[cnt] = ((uint8_t)temp0<<8) | temp1;
 	}
-	MPU_T = (double)raw[3]/333.87 + 21.0f;
 	CS_MPU =1;
+	
+	/*data transfer*/
+	MPU_T = (double)raw[3]/333.87 + 21.0f;
 }
 
 
 float get_MPU_T(void){
 	return MPU_T;
 }
+

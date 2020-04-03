@@ -48,7 +48,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-extern char RX_BUFF[30];
+extern char RX_BUFF[50];
 extern uint8_t RX_CNT;
 extern uint32_t NAND_BSY_WIDTH;
 uint8_t Power_ON_Flag;
@@ -218,54 +218,69 @@ void SysTick_Handler(void)
 void EXTI0_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI0_IRQn 0 */
-//	printf("console> Sys log out. Hit [RESET] or [S3] key to awake.\r\n");
-//	while(WK_UP); //wait for relase wakeup key
-//	SYS_STDBY();
-  /* USER CODE END EXTI0_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
-  /* USER CODE BEGIN EXTI0_IRQn 1 */
+	printf("console> Sys log out. Hit [RESET] or [S3] key to awake.\r\n");
+	LED_Y = !LED_Y;
+	//	while(WK_UP); //wait for relase wakeup key
+	//	SYS_STDBY();
+	/* USER CODE END EXTI0_IRQn 0 */
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+	/* USER CODE BEGIN EXTI0_IRQn 1 */
 
-  /* USER CODE END EXTI0_IRQn 1 */
+	/* USER CODE END EXTI0_IRQn 1 */
 }
 
 /**
-  * @brief This function handles EXTI line1 interrupt.
-  */
+* @brief This function handles EXTI line1 interrupt.
+*/
 void EXTI1_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI1_IRQn 0 */
+	/* USER CODE BEGIN EXTI1_IRQn 0 */
 	printf("console> falling on PK1\r\n");
-  /* USER CODE END EXTI1_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
-  /* USER CODE BEGIN EXTI1_IRQn 1 */
+	LED_Y = !LED_Y;
+	/* USER CODE END EXTI1_IRQn 0 */
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
+	/* USER CODE BEGIN EXTI1_IRQn 1 */
 
-  /* USER CODE END EXTI1_IRQn 1 */
+	/* USER CODE END EXTI1_IRQn 1 */
 }
 
 /**
-  * @brief This function handles EXTI line2 interrupt.
-  */
+* @brief This function handles EXTI line2 interrupt.
+*/
 void EXTI2_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI2_IRQn 0 */
+	/* USER CODE BEGIN EXTI2_IRQn 0 */
 	printf("console> falling on PK2\r\n");
-  /* USER CODE END EXTI2_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
-  /* USER CODE BEGIN EXTI2_IRQn 1 */
+	LED_Y = !LED_Y;
+	/* USER CODE END EXTI2_IRQn 0 */
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+	/* USER CODE BEGIN EXTI2_IRQn 1 */
 
-  /* USER CODE END EXTI2_IRQn 1 */
+	/* USER CODE END EXTI2_IRQn 1 */
 }
 
 /**
   * @brief This function handles EXTI line4 interrupt.
   */
+
 void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
-//	short raw[7];
-//	
-//	MPU_Rd_Raw(raw);
-//	IMU_exe(raw);
+	short raw[7] = {0};
+	int cnt;
+	uint8_t raw_upload_raw[14] = {0};
+	
+	if(MPU_isRDY()){
+		MPU_Rd_Raw(raw);
+		IMU_exe(raw);
+		
+		/*upload stream*/
+		for(cnt=0; cnt<7; cnt++){
+			raw_upload_raw[cnt*2] = raw[cnt] >> 8;
+			raw_upload_raw[cnt*2+1] = raw[cnt]&0x00ff;
+		}
+		mst_pushStream(raw_upload_raw,14);
+	}
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
   /* USER CODE BEGIN EXTI4_IRQn 1 */
@@ -300,8 +315,7 @@ void EXTI9_5_IRQHandler(void)
 /**
   * @brief This function handles USART1 global interrupt.
   */
-void USART1_IRQHandler(void)
-{
+void USART1_IRQHandler(void){
   /* USER CODE BEGIN USART1_IRQn 0 */
 	uint8_t temp;
 	

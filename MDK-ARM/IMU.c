@@ -27,13 +27,14 @@ float get_IMU_tmp(void){
 	char str[100] = {0};
 	float buff[18] = {0,0,0,1,12,1,0,0,1,12,1,0,0,1,12,1,0,0};
 	
-	matrix A = {0}, B = {0}, C = {0};
+	matrix A = {0}, B = {0}, C = {0}, D = {0};
 	A = mat_unit(3);
 	B = mat_unit(3);
 	C = mat_add(A,B);
 	C = mat_mult(C,C);
-	//mat_fill(&C, 6, 3, buff);
-	printf("%s",mat_put(C,str));
+	mat_init(&D, 6, 3);
+	mat_fill(&D, buff);
+	//printf("%s",mat_put(D,str));
 	
 	return tmp;
 }

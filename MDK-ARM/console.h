@@ -28,5 +28,10 @@ void cmd_imu(void);
 void cmd_SYSInfo(void);
 void cmd_storage(void);
 void cmd_exit(void);
+/*master list*/
+void mst_sync(uint8_t* echo);
+void mst_getStream(uint8_t* echo, uint8_t length);
+void mst_pushStream(uint8_t* pDst, uint8_t length);
+
 
 #endif

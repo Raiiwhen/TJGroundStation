@@ -4,7 +4,7 @@
 #include "main.h"
 #include "stm32f4xx.h"
 
-#define	battery	650.0f
+#define	battery	200.0f
 #define IIC1_SOFT
 
 enum Mode{SLEEP = 0,MANUAL,SCAN,AUTO};
@@ -16,9 +16,9 @@ extern enum Mode current_Mode;
 
 void ltc2944_init(void);
 void ltc2944_fixq(void);
-void ltc2944_voltage(void);
-void ltc2944_current(void);
-void ltc2944_quantity(void);
+float LTC_getV(void);
+float LTC_getI(void);
+float LTC_getQ(void);
 void ltc2944_setq(uint16_t quantity);
 void ltc2944_setMode(enum Mode mode);
 	

@@ -108,7 +108,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+	
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -159,6 +159,7 @@ int main(void)
   while (1)
   {
 		console_exe();
+		
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -715,7 +716,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : PA0 INT_MPU_Pin */
   GPIO_InitStruct.Pin = GPIO_PIN_0|INT_MPU_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 

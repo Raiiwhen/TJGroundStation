@@ -59,3 +59,4 @@ tjgroundstation\console.o: ../Middlewares/Third_Party/FatFs/src/diskio.h
 tjgroundstation\console.o: ../Inc/user_diskio.h
 tjgroundstation\console.o: NAND.h
 tjgroundstation\console.o: SD.h
+tjgroundstation\console.o: SRAM.h

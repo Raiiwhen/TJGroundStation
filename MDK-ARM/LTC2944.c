@@ -7,9 +7,9 @@
 	*	电流最大为1.28A，I=1.28*（DATA-7FFFH）/7FFFH
 *********************************************************************************************/
 
-static float voltage = 0;
-static float current = 0;
-static float quantity = battery;
+float voltage = 0;
+float current = 0;
+float quantity = battery;
 enum Mode current_Mode = SCAN;
 
 #ifdef IIC1_SOFT
@@ -159,72 +159,64 @@ void ltc2944_setMode(enum Mode mode){
 		current_Mode = mode;
 }
 
-void ltc2944_voltage(void){
+float LTC_getV(void){
 	uint16_t voltage_0x;
 	IIC1_Start();
 	IIC1_Send_Byte(0xC8);
-	if(IIC1_Wait_Ack()){
-		return;
-	}
+	if(IIC1_Wait_Ack())return 0;
+	
 	IIC1_Send_Byte(0x08);
-	if(IIC1_Wait_Ack()){
-		return;
-	}
+	if(IIC1_Wait_Ack())return 0;
+
 	IIC1_Start();
 	IIC1_Send_Byte(0xC9);
-	if(IIC1_Wait_Ack()){
-		return;
-	}
+	if(IIC1_Wait_Ack())return 0;
+
 	voltage_0x = (uint16_t)IIC1_Read_Byte(1) << 8;
 	voltage_0x |= IIC1_Read_Byte(0);
 	IIC1_Stop();
 	voltage = (float)voltage_0x*70.8f/0xFFFF;
+	
+	return voltage;
 }
 
-void ltc2944_current(void){
+float LTC_getI(void){
 	uint16_t current_0x;
 	IIC1_Start();
 	IIC1_Send_Byte(0xC8);
-	if(IIC1_Wait_Ack()){
-		return;
-	}
+	if(IIC1_Wait_Ack())return 0;
 	IIC1_Send_Byte(0x0E);
-	if(IIC1_Wait_Ack()){
-		return;
-	}
+	if(IIC1_Wait_Ack())return 0;
 	IIC1_Start();
 	IIC1_Send_Byte(0xC9);
-	if(IIC1_Wait_Ack()){
-		return;
-	}
+	if(IIC1_Wait_Ack())return 0;
+	
 	current_0x = (uint16_t)IIC1_Read_Byte(1) << 8;
 	current_0x |= IIC1_Read_Byte(0);
 	IIC1_Stop();
 	current = (float)(current_0x- 0x7FFF)*1.28f/0x7FFF;
+	
+	return current;
 }
 //获取电量
-void ltc2944_quantity(void){
+float LTC_getQ(void){
 	uint16_t quantity_0x;
 	IIC1_Start();
 	IIC1_Send_Byte(0xC8);
-	if(IIC1_Wait_Ack()){
-		return;
-	}
+	if(IIC1_Wait_Ack())return 0;
 	IIC1_Send_Byte(0x02);
-	if(IIC1_Wait_Ack()){
-		return;
-	}
+	if(IIC1_Wait_Ack())return 0;
 	IIC1_Start();
 	IIC1_Send_Byte(0xC9);
-	if(IIC1_Wait_Ack()){
-		return;
-	}
+	if(IIC1_Wait_Ack())return 0;
 	quantity_0x = (uint16_t)IIC1_Read_Byte(1) << 8;
 	quantity_0x |= IIC1_Read_Byte(0);
 	IIC1_Stop();
 	quantity = battery - (float)(0xFFFF-quantity_0x)*0.02125f;
 	
+	return quantity/battery*100;
 }
+
 //设置电量寄存器
 void ltc2944_setq(uint16_t quantity){
 	IIC1_Start();
@@ -249,10 +241,9 @@ void ltc2944_setq(uint16_t quantity){
 }
 
 void ltc2944_fixq(void){
-	
-	ltc2944_voltage();
-	ltc2944_current();
-	ltc2944_quantity();
+	LTC_getI();
+	LTC_getQ();
+	LTC_getV();
 	if(quantity < 0){		//电量修正
 		if(current > 0){
 			quantity = (voltage - 3.8f)*1000;
@@ -274,17 +265,12 @@ void ltc2944_fixq(void){
 void ltc2944_init(void){	//配置控制寄存器01H
 	IIC1_Start();
 	IIC1_Send_Byte(0xC8);
-	if(IIC1_Wait_Ack()){
-		return;
-	}
+	if(IIC1_Wait_Ack())return;
 	IIC1_Send_Byte(0x01);	
-	if(IIC1_Wait_Ack()){
-		return;
-	}
-	IIC1_Send_Byte(0x62);
-	if(IIC1_Wait_Ack()){
-		return;
-	}
+	if(IIC1_Wait_Ack())return;
+	IIC1_Send_Byte(0xe2);
+	if(IIC1_Wait_Ack())return;
 	IIC1_Stop();
+
 	ltc2944_fixq();
 }

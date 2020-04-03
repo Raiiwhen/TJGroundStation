@@ -17,7 +17,7 @@ matrix mat_ERR={
 /*end example*/
 
 int mat_init(matrix* mat, int row, int col){
-	ram_mat_ptr += (row+col);
+	ram_mat_ptr += (row*col);
 	if(ram_mat_ptr>512)return 1;
 	
 	mat->col = col;
@@ -40,14 +40,8 @@ int mat_reinit(matrix* mat, int row, int col){
 	return 0;
 }
 
-int mat_fill(matrix* mat, int row, int col, float* data){
-	ram_mat_ptr += (row+col);
-	if(ram_mat_ptr>512)return 1;
-	
-	mat->col = col;
-	mat->row = row;
-	mat->data = ram_mat + ram_mat_ptr;
-	memcpy(mat->data, data, row*col);
+int mat_fill(matrix* mat, float* data){
+	memcpy(mat->data, data, mat->row * mat->col * 4);
 	
 	return 0;
 }
