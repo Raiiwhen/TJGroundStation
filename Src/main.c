@@ -63,12 +63,16 @@ SPI_HandleTypeDef hspi5;
 TIM_HandleTypeDef htim5;
 
 UART_HandleTypeDef huart1;
+DMA_HandleTypeDef hdma_usart1_rx;
+DMA_HandleTypeDef hdma_usart1_tx;
 
 NAND_HandleTypeDef hnand1;
 SDRAM_HandleTypeDef hsdram1;
 
 /* USER CODE BEGIN PV */
 extern uint32_t ADC_TMP[64];
+extern uint8_t RX_BUFF[128];
+extern uint8_t TX_BUFF[128];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -133,7 +137,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	HAL_ADC_Start_DMA(&hadc1,(uint32_t*)ADC_TMP,16);
 	HAL_TIM_PWM_Start(&htim5,TIM_CHANNEL_2);
-	__HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
+	HAL_UART_Receive_DMA(&huart1,RX_BUFF,128);
+	__HAL_UART_ENABLE_IT(&huart1,UART_IT_IDLE);
+	__HAL_DMA_ENABLE_IT(&hdma_usart1_tx,DMA_IT_TC);
+	
 	SPI1->CR1 |= 0x00000040; //enable spi1 MPU9250
 	SPI4->CR1 |= 0x00000040; //enable spi4 W25M02
 	SPI5->CR1 |= 0x00000040; //enable spi5 MS5611
@@ -362,7 +369,7 @@ static void MX_SPI4_Init(void)
   hspi4.Init.CLKPolarity = SPI_POLARITY_HIGH;
   hspi4.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi4.Init.NSS = SPI_NSS_SOFT;
-  hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi4.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi4.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi4.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi4.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -520,6 +527,12 @@ static void MX_DMA_Init(void)
   /* DMA2_Stream0_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+  /* DMA2_Stream2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+  /* DMA2_Stream7_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream7_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
 }
 
@@ -716,7 +729,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pins : PA0 INT_MPU_Pin */
   GPIO_InitStruct.Pin = GPIO_PIN_0|INT_MPU_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 

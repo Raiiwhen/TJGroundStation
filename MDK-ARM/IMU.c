@@ -3,9 +3,11 @@
 #include <stdio.h>
 
 #define SCALE_2G 0.00060425
-#define SCALE_2000dps 0.3051758
+#define SCALE_2000dps 0.06103516
 
-v3 acc,gyro;
+v3 acc,gyro;			//m/s
+v3 angel_body;		//deg
+float dT = 0.001; //s
 short tmp;
 
 int IMU_exe(short* raw){
@@ -17,6 +19,14 @@ int IMU_exe(short* raw){
 	gyro.x = raw[4] * SCALE_2000dps;
 	gyro.y = raw[5] * SCALE_2000dps;
 	gyro.z = raw[6] * SCALE_2000dps;
+	/*Integral*/
+	angel_body.x += gyro.x * dT;
+	angel_body.y += gyro.y * dT;
+	angel_body.z += gyro.z * dT;
+	/*rotation matrix*/
+	
+	
+	
 	/*Kalmen filter*/
 	
 	
@@ -38,3 +48,11 @@ float get_IMU_tmp(void){
 	
 	return tmp;
 }
+
+void reset_val(void){
+	angel_body.x = 0;
+	angel_body.y = 0;
+	angel_body.z = 0;
+}
+
+

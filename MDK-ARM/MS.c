@@ -4,6 +4,8 @@
 #define SYS_FREQ 180000000
 
 uint16_t MS_PROM[8];
+int64_t MS_dT;
+uint32_t D1, D2;
 
 static uint8_t MS_WRByte(uint8_t data){
 	uint8_t res;
@@ -55,8 +57,7 @@ void MS_TRIG_Pressure(uint8_t level){
 	CS_MS = 1;
 }
 
-int64_t dT;
-uint32_t D1, D2;
+
 
 float MS_Read_Temperature(void){
 	int64_t TEMP = 0;
@@ -70,8 +71,8 @@ float MS_Read_Temperature(void){
 	D2 |= MS_WRByte(0x00);
 	CS_MS = 1;
 	
-	dT = (float)D2 - (float)MS_PROM[5] * 256;
-	TEMP = 2000 + ((dT * MS_PROM[6]) / 8388608);
+	MS_dT = (float)D2 - (float)MS_PROM[5] * 256;
+	TEMP = 2000 + ((MS_dT * MS_PROM[6]) / 8388608);
 	
 	if(TEMP> 8500)TEMP = 8500;
 	if(TEMP<-4000)TEMP = -4000;
@@ -81,7 +82,7 @@ float MS_Read_Temperature(void){
 
 float MS_Read_Pressure(void){
 	int64_t SENSE, D1, P;
-	int64_t OFF = ((float)MS_PROM[2] * 32768) + (float)MS_PROM[4]*dT / 128;
+	int64_t OFF = ((float)MS_PROM[2] * 32768) + (float)MS_PROM[4]*MS_dT / 128;
 	
 	CS_MS = 0;
 	MS_WRByte(MS_RD_ADC);
@@ -92,7 +93,7 @@ float MS_Read_Pressure(void){
 	D1 |= MS_WRByte(0x00);
 	CS_MS = 1;
 	
-	SENSE = (int64_t)MS_PROM[1] * 32768 + (int64_t)MS_PROM[3] * dT / 256;
+	SENSE = (int64_t)MS_PROM[1] * 32768 + (int64_t)MS_PROM[3] * MS_dT / 256;
 	P = (D1 * SENSE / 2097152 - OFF) / 32768;
 	
 	return (float)P/100;

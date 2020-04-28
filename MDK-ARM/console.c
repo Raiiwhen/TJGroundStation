@@ -18,10 +18,10 @@
 
 uint8_t page_buff[8629];
 uint8_t page_wbuff[8629];
-uint8_t mst_echo[128];
-uint8_t mst_databuff[128];
+volatile uint8_t mst_mode;
 
 extern SD_HandleTypeDef hsd;
+extern UART_HandleTypeDef huart1;
 
 /* basic support function*/
 static void delay_ms(uint16_t ms){
@@ -32,9 +32,13 @@ static void delay_ms(uint16_t ms){
 	}
 }
 
-char RX_BUFF[50];
-uint8_t RX_CNT;
-static char CONSOLE_FLAG;
+#define RX_BUFF_SIZE 128
+char RX_BUFF[RX_BUFF_SIZE];
+#define TX_BUFF_SIZE 128
+char TX_BUFF[TX_BUFF_SIZE];
+volatile uint8_t RX_CNT;
+volatile char CONSOLE_FLAG;
+
 #pragma import(__use_no_semihosting)             
 FILE __stdout;       
 struct __FILE 							{	int handle; 			}; 
@@ -44,13 +48,6 @@ int fputc(int ch, FILE *f){
 	while((CONSOLE_UART->SR&0X40)==0);
 	CONSOLE_UART->DR = (uint8_t) ch;      
 	return ch;
-}
-void put_len(const uint8_t* buff, uint16_t length){
-	uint16_t cnt = 0;
-	while(length--){
-		while((CONSOLE_UART->SR&0X40)==0);
-		CONSOLE_UART->DR = *(buff + cnt++);
-	}
 }
 /* end support*/
 
@@ -129,55 +126,61 @@ void console_log(void){
 }
 
 void console_exe(void){
-	uint16_t echo_len = 0;
-	
 	if(!CONSOLE_FLAG){
 		return;
 	}else{
-		CONSOLE_FLAG = 0;
-	}
-	
-	if(RX_BUFF[0] < 64){
-		/*TJMonster interface*/		
-		switch(RX_BUFF[0]){
-			case 8:	//sync flag
-				mst_sync(mst_echo);
-				echo_len = 16;
-				break;
-			case 9:	//sync flag
-				mst_getStream(mst_echo,127);
-				echo_len = 128;
-				break;
+		if(RX_BUFF[0] < 64){
+			/*TJMonster interface*/		
+			switch(RX_BUFF[0]){
+				case 8:	//sync flag
+					mst_sync((uint8_t*)TX_BUFF);
+					HAL_UART_Transmit_DMA(&huart1,(uint8_t*)TX_BUFF,128);
+					break;
+				case 9:	//get multi channel data
+					mst_mode = 0x09;
+					break;
+				case 10:	//start real time transmit
+					mst_mode = (mst_mode==0x0a ? 0x00: 0x0a);
+					break;
+				case 11:	//stop real time transmit
+					mst_mode = 0x0b;
+					break;
+				case 12:	//reset cmd
+					reset_val();
+					break;
 
-			default: printf("%c",0xaa);	//error flag
+				default: 
+					break;
+			}
+		}else{
+			/*console interface*/
+			printf("console> ");
+			if(!strcmp(RX_BUFF,"hi\r\n"))						{printf("yo~");}
+			else if(!memcmp(RX_BUFF,"IIC1",4))			{cmd_iic1();}
+			else if(!memcmp(RX_BUFF,"flash",5))			{cmd_flash();}
+			else if(!memcmp(RX_BUFF,"RTC",3))				{cmd_rtc();}
+			else if(!memcmp(RX_BUFF,"MPU",3))				{cmd_mpu();}
+			else if(!memcmp(RX_BUFF,"W25",3))				{cmd_w25();}
+			else if(!memcmp(RX_BUFF,"MS",2))				{cmd_ms();}
+			else if(!memcmp(RX_BUFF,"IMU",3))				{cmd_imu();}
+			else if(!memcmp(RX_BUFF,"SYS",3))  			{cmd_SYSInfo();}
+			else if(!memcmp(RX_BUFF,"/",1))  				{cmd_storage();}
+			else if(!strcmp(RX_BUFF,"exit\r\n"))		{cmd_exit();}
+			else {
+				RX_BUFF[RX_CNT-1] = '\0' ;
+				printf("unknown cmd '%s'\r\n",RX_BUFF);
+				cmd_help();
+			}
+			printf("\r\n");
 		}
-		put_len(mst_echo,echo_len);
-		memset(mst_echo,128,0);
-	}else{
-		/*console interface*/
-		printf("console> ");
-		if(!strcmp(RX_BUFF,"hi\r\n"))						{printf("yo~");}
-		else if(!memcmp(RX_BUFF,"IIC1",4))			{cmd_iic1();}
-		else if(!memcmp(RX_BUFF,"flash",5))			{cmd_flash();}
-		else if(!memcmp(RX_BUFF,"RTC",3))				{cmd_rtc();}
-		else if(!memcmp(RX_BUFF,"MPU",3))				{cmd_mpu();}
-		else if(!memcmp(RX_BUFF,"W25",3))				{cmd_w25();}
-		else if(!memcmp(RX_BUFF,"MS",2))				{cmd_ms();}
-		else if(!memcmp(RX_BUFF,"IMU",3))				{cmd_imu();}
-		else if(!memcmp(RX_BUFF,"SYS",3))  			{cmd_SYSInfo();}
-		else if(!memcmp(RX_BUFF,"/",1))  				{cmd_storage();}
-		else if(!strcmp(RX_BUFF,"exit\r\n"))		{cmd_exit();}
-		else {
-			RX_BUFF[RX_CNT-1] = '\0' ;
-			printf("unknown cmd '%s'\r\n",RX_BUFF);
-			cmd_help();
-		}
-		printf("\r\n");
+		/*reset buff*/
+		memset(RX_BUFF,0,128);
+		RX_CNT = 0;
+		CONSOLE_FLAG = 0;
+		HAL_UART_Receive_DMA(&huart1,(uint8_t*)RX_BUFF,128);
+		LED_Y = !LED_Y;
+		return;
 	}
-	/*reset buff*/
-	memset(RX_BUFF,0,30);
-	RX_CNT = 0;
-	LED_Y = !LED_Y;
 }
 
 void cmd_help(void){
@@ -579,21 +582,12 @@ void cmd_exit(void){
 	SYS_STDBY();
 }
 
-void mst_getStream(uint8_t* echo, uint8_t length){
-	memcpy(echo, mst_databuff, length>127?127:length);
-}
-
-void mst_pushStream(uint8_t* pDst, uint8_t length){
-	memcpy(mst_databuff, pDst, length>127?127:length);
-}
-
 void mst_sync(uint8_t* echo){
 	uint8_t buffer[16] = {0};
 	uint8_t pSrc[8] = {0};
 	uint8_t mpu_id;
 	uint32_t nand_id;
 	uint32_t w25_id;
-	uint32_t sd_sta;
 	
 	buffer[0] = 0xb1;
 	buffer[1] = 0xb1;
@@ -634,5 +628,11 @@ void mst_sync(uint8_t* echo){
 
 	memset(echo,16,0);
 	memcpy(echo,buffer,16);
+}
+
+void mst_upload(uint8_t* pSrc, uint8_t length){
+	memset(TX_BUFF, 0, 128);
+	memcpy(TX_BUFF, pSrc, length>128?128:length);
+	HAL_UART_Transmit_DMA(&huart1,(uint8_t*)TX_BUFF,128);
 }
 

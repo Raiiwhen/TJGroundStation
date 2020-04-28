@@ -10,4 +10,6 @@ typedef struct{
 int IMU_exe(short* raw);
 void update_IMU_var(float feed);
 float get_IMU_tmp(void);
+void reset_val(void);
+
 #endif

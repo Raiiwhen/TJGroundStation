@@ -19,6 +19,8 @@
 #include "console.h"
 #include "pwr_mgt.h"
 #include "stdio.h"
+#include "stdlib.h"
+#include "string.h"
 #include "IMU.h"
 #include "MPU.h"
 #include "NAND.h"
@@ -52,6 +54,8 @@ extern char RX_BUFF[50];
 extern uint8_t RX_CNT;
 extern uint32_t NAND_BSY_WIDTH;
 uint8_t Power_ON_Flag;
+extern uint8_t mst_mode;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -66,6 +70,8 @@ uint8_t Power_ON_Flag;
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_adc1;
+extern DMA_HandleTypeDef hdma_usart1_rx;
+extern DMA_HandleTypeDef hdma_usart1_tx;
 extern UART_HandleTypeDef huart1;
 /* USER CODE BEGIN EV */
 
@@ -222,65 +228,80 @@ void EXTI0_IRQHandler(void)
 	LED_Y = !LED_Y;
 	//	while(WK_UP); //wait for relase wakeup key
 	//	SYS_STDBY();
-	/* USER CODE END EXTI0_IRQn 0 */
-	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
-	/* USER CODE BEGIN EXTI0_IRQn 1 */
+  /* USER CODE END EXTI0_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0);
+  /* USER CODE BEGIN EXTI0_IRQn 1 */
 
-	/* USER CODE END EXTI0_IRQn 1 */
+  /* USER CODE END EXTI0_IRQn 1 */
 }
 
 /**
-* @brief This function handles EXTI line1 interrupt.
-*/
+  * @brief This function handles EXTI line1 interrupt.
+  */
 void EXTI1_IRQHandler(void)
 {
-	/* USER CODE BEGIN EXTI1_IRQn 0 */
+  /* USER CODE BEGIN EXTI1_IRQn 0 */
 	printf("console> falling on PK1\r\n");
 	LED_Y = !LED_Y;
-	/* USER CODE END EXTI1_IRQn 0 */
-	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
-	/* USER CODE BEGIN EXTI1_IRQn 1 */
+  /* USER CODE END EXTI1_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_1);
+  /* USER CODE BEGIN EXTI1_IRQn 1 */
 
-	/* USER CODE END EXTI1_IRQn 1 */
+  /* USER CODE END EXTI1_IRQn 1 */
 }
 
 /**
-* @brief This function handles EXTI line2 interrupt.
-*/
+  * @brief This function handles EXTI line2 interrupt.
+  */
 void EXTI2_IRQHandler(void)
 {
-	/* USER CODE BEGIN EXTI2_IRQn 0 */
+  /* USER CODE BEGIN EXTI2_IRQn 0 */
 	printf("console> falling on PK2\r\n");
 	LED_Y = !LED_Y;
-	/* USER CODE END EXTI2_IRQn 0 */
-	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
-	/* USER CODE BEGIN EXTI2_IRQn 1 */
+  /* USER CODE END EXTI2_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+  /* USER CODE BEGIN EXTI2_IRQn 1 */
 
-	/* USER CODE END EXTI2_IRQn 1 */
+  /* USER CODE END EXTI2_IRQn 1 */
 }
 
 /**
   * @brief This function handles EXTI line4 interrupt.
   */
-
 void EXTI4_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI4_IRQn 0 */
-	short raw[7] = {0};
-	int cnt;
-	uint8_t raw_upload_raw[14] = {0};
+	static short raw[7] = {0};
+	static uint8_t mst_pack[104];
+	static uint8_t mst_pack_cnt;
 	
 	if(MPU_isRDY()){
+		/*execute IMU*/
 		MPU_Rd_Raw(raw);
 		IMU_exe(raw);
 		
-		/*upload stream*/
-		for(cnt=0; cnt<7; cnt++){
-			raw_upload_raw[cnt*2] = raw[cnt] >> 8;
-			raw_upload_raw[cnt*2+1] = raw[cnt]&0x00ff;
+		/*master machine upload*/
+		switch(mst_mode){
+			case 0x09: /*Asynchronous upload*/
+				mst_upload((uint8_t*)raw+1,14);
+				mst_mode = 0;
+				break;
+			case 0x0a:/*Synchronous upload*/
+				memcpy(mst_pack + 4 + mst_pack_cnt*2, (uint8_t*)raw+1, 2);
+				mst_pack_cnt ++;
+				if(mst_pack_cnt == 50){
+					mst_pack[0] = 0x09;
+					mst_pack[1] = 50;
+					for(int i=4; i <104; i++) mst_pack[2] += mst_pack[i];
+					mst_upload(mst_pack,104);
+					
+					memset(mst_pack,0,104);
+					mst_pack_cnt = 0;
+				}
+				break;
 		}
-		mst_pushStream(raw_upload_raw,14);
 	}
+	
   /* USER CODE END EXTI4_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_4);
   /* USER CODE BEGIN EXTI4_IRQn 1 */
@@ -315,20 +336,22 @@ void EXTI9_5_IRQHandler(void)
 /**
   * @brief This function handles USART1 global interrupt.
   */
-void USART1_IRQHandler(void){
+void USART1_IRQHandler(void)
+{
   /* USER CODE BEGIN USART1_IRQn 0 */
 	uint8_t temp;
 	
-	if(USART1->SR & 0x00000020){
+	if(USART1->SR & 0x00000010){
+	  temp = USART1->SR;
 		temp = USART1->DR;
-		RX_BUFF[RX_CNT++] = temp;		
-		if(temp==0x0d)console_setflag();
+		HAL_UART_DMAStop(&huart1);
+		temp = DMA2_Stream2->NDTR;
+		RX_CNT = 128 - temp;
+		console_setflag();
 	}
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
-	__HAL_UART_ENABLE_IT(&huart1,UART_IT_ERR);
-	__HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
   /* USER CODE END USART1_IRQn 1 */
 }
 
@@ -344,6 +367,34 @@ void DMA2_Stream0_IRQHandler(void)
   /* USER CODE BEGIN DMA2_Stream0_IRQn 1 */
 
   /* USER CODE END DMA2_Stream0_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA2 stream2 global interrupt.
+  */
+void DMA2_Stream2_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA2_Stream2_IRQn 0 */
+
+  /* USER CODE END DMA2_Stream2_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_usart1_rx);
+  /* USER CODE BEGIN DMA2_Stream2_IRQn 1 */
+
+  /* USER CODE END DMA2_Stream2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA2 stream7 global interrupt.
+  */
+void DMA2_Stream7_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA2_Stream7_IRQn 0 */
+	LED_Y = !LED_Y;
+  /* USER CODE END DMA2_Stream7_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_usart1_tx);
+  /* USER CODE BEGIN DMA2_Stream7_IRQn 1 */
+
+  /* USER CODE END DMA2_Stream7_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

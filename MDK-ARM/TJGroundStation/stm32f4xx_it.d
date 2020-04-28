@@ -42,6 +42,8 @@ tjgroundstation\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ha
 tjgroundstation\stm32f4xx_it.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 tjgroundstation\stm32f4xx_it.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 tjgroundstation\stm32f4xx_it.o: ..\MDK-ARM\pwr_mgt.h
+tjgroundstation\stm32f4xx_it.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+tjgroundstation\stm32f4xx_it.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 tjgroundstation\stm32f4xx_it.o: ..\MDK-ARM\IMU.h
 tjgroundstation\stm32f4xx_it.o: ..\MDK-ARM\MPU.h
 tjgroundstation\stm32f4xx_it.o: ..\MDK-ARM\NAND.h

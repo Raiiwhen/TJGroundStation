@@ -4,10 +4,7 @@
 #include "main.h"
 #include "stdio.h"
 
-uint32_t console_RD(uint8_t str);
-uint32_t console_WR(uint8_t* str);
-void fput_u8(char ch);
-
+void put_len(const uint8_t* buff, uint16_t length);
 void console_setflag(void);
 void console_exe(void);
 
@@ -30,8 +27,6 @@ void cmd_storage(void);
 void cmd_exit(void);
 /*master list*/
 void mst_sync(uint8_t* echo);
-void mst_getStream(uint8_t* echo, uint8_t length);
-void mst_pushStream(uint8_t* pDst, uint8_t length);
-
+void mst_upload(uint8_t* pSrc, uint8_t length);
 
 #endif
