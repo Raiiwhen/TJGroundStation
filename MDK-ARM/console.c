@@ -144,6 +144,7 @@ void console_exe(void){
 					break;
 				case 11:	//stop real time transmit
 					mst_mode = 0x0b;
+					LED_Y = 0;
 					break;
 				case 12:	//reset cmd
 					reset_val();
