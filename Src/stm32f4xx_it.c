@@ -274,6 +274,7 @@ void EXTI4_IRQHandler(void)
 	static short raw[7] = {0};
 	static uint8_t mst_pack[104];
 	static uint8_t mst_pack_cnt;
+	static uint8_t mst_pack_index;
 	
 	if(MPU_isRDY()){
 		/*execute IMU*/
@@ -290,9 +291,12 @@ void EXTI4_IRQHandler(void)
 				memcpy(mst_pack + 4 + mst_pack_cnt*2, (uint8_t*)raw+1, 2);
 				mst_pack_cnt ++;
 				if(mst_pack_cnt == 50){
+					mst_pack_index++;
 					mst_pack[0] = 0x09;
 					mst_pack[1] = 50;
 					for(int i=4; i <104; i++) mst_pack[2] += mst_pack[i];
+					mst_pack[3] = mst_pack_index;
+					
 					mst_upload(mst_pack,104);
 					
 					memset(mst_pack,0,104);

@@ -129,7 +129,7 @@ void console_exe(void){
 	if(!CONSOLE_FLAG){
 		return;
 	}else{
-		if(RX_BUFF[0] < 64){
+		if(RX_BUFF[0] < 32){
 			/*TJMonster interface*/		
 			switch(RX_BUFF[0]){
 				case 8:	//sync flag
@@ -430,6 +430,7 @@ void cmd_storage(void){
 					NAND_ID(ID);
 					if			(ID[0] == 0x7284d5ec)	{printf("SAMSUNG K9GAG08U0E, 2GB MLC.");}
 					else if (ID[0] == 0x72c5d7ec)	{printf("SAMSUNG K9LBG08U0E, 4GB MLC.");}
+					else if (ID[0] == 0x4F4C6C2C)	{printf("MICRON MT29F64G08, 64GB MLC.");}
 					else													{printf("No matched [0x%08X-%04X]",ID[0],ID[1]);}
 	}else if(!strcmp(RX_BUFF,"/SD -ID\r\n")){
 					res = (HAL_SD_Init(&hsd) | HAL_SD_ConfigWideBusOperation(&hsd, SDIO_BUS_WIDE_4B));
